@@ -29,7 +29,7 @@ def click_element(element_type, element_key, maximum_of_retry):
 parser = argparse.ArgumentParser()
 
 
-#If not input a time to trigger, then default time is current time plus 1 minute
+#If not input a time to trigger, then default time is current time plus 1 minute, e.g: 2023-05-07 15:35:00.00000000
 dt_default_lambda = lambda: datetime.datetime.now() + datetime.timedelta(minutes=1)
 trigger_time_default = dt_default_lambda().strftime('%Y-%m-%d %H:%M:%S.%f')
 
@@ -76,6 +76,8 @@ while True:
         break
     time.sleep(0.01)
 
+#Time to pay
 time.sleep(60)
+
 # Close the browser
 driver.quit()
