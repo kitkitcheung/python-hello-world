@@ -17,21 +17,44 @@ os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_KEY")
 os.environ["OPENAI_API_VERSION"] = "2023-05-15"
 question = "What are the approaches to Task Decomposition?"
 
-# from langchain.vectorstores import Chroma
-# vectorstore = Chroma.from_documents(documents=all_splits, embedding=OpenAIEmbeddings(
-#     deployment="text-embedding-ada-002",
-#     model="text-embedding-ada-002",
-#     chunk_size=16))
-# docs = vectorstore.similarity_search(question)
-
-from langchain.vectorstores import FAISS
-vectorstore = FAISS.from_documents(documents=all_splits, embedding=OpenAIEmbeddings(
+embeddings=OpenAIEmbeddings(
     deployment="text-embedding-ada-002",
     model="text-embedding-ada-002",
-    chunk_size=16))
+    chunk_size=16)
+
+print("Example using Chroma as vectorstore")
+from langchain.vectorstores import Chroma
+vectorstore = Chroma.from_documents(documents=all_splits, embedding=embeddings)
 docs = vectorstore.similarity_search(question)
 print(docs[0].page_content)
 
+print("Example using FAISS as vectorstore")
+from langchain.vectorstores import FAISS
+vectorstore = FAISS.from_documents(documents=all_splits, embedding=embeddings)
+docs = vectorstore.similarity_search(question)
+print(docs[0].page_content)
+
+print("Example using LanceDB as vectorstore")
+from langchain.vectorstores import LanceDB
+import lancedb
+
+db = lancedb.connect("./lancedb")
+table = db.create_table(
+    "my_table",
+    data=[
+        {
+            "vector": embeddings.embed_query("Hello World"),
+            "text": "Hello World",
+            "id": "1",
+        }
+    ],
+    mode="overwrite",
+)
+docsearch = LanceDB.from_documents(all_splits, embeddings, connection=table)
+
+docs = docsearch.similarity_search(question)
+
+print(docs[0].page_content)
 
 # from langchain.retrievers import SVMRetriever
 # svm_retriever = SVMRetriever.from_documents(all_splits,OpenAIEmbeddings(
